@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Header } from '@/components/dashboard/Header';
 import { SearchBar } from '@/components/dashboard/SearchBar';
 import { Categories, type Category } from '@/components/dashboard/Categories';
@@ -13,28 +12,24 @@ const categories: Category[] = [
     title: 'BABY & MOTHER',
     image: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?w=500',
     color: '#FFA69E',
-    slug: 'baby-mother',
   },
   {
     id: 2,
     title: 'OTC MEDICINES',
     image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500',
     color: '#98D8C8',
-    slug: 'otc-medicines',
   },
   {
     id: 3,
     title: 'DIABETES MEDICINE',
     image: 'https://images.unsplash.com/photo-1579165466741-7f35e4755660?w=500',
     color: '#88BBE4',
-    slug: 'diabetes-medicine',
   },
   {
     id: 4,
     title: 'WELLNESS ITEMS',
     image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500',
     color: '#B8E0D4',
-    slug: 'wellness-items',
   },
 ];
 
@@ -60,16 +55,8 @@ const navItems = [
 ];
 
 export default function Dashboard() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNavItem, setActiveNavItem] = useState('medicines');
-
-  const handleCategoryPress = (category: Category) => {
-    router.push({
-      pathname: `/category/${category.slug}`,
-      params: { title: category.title }
-    });
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -83,7 +70,7 @@ export default function Dashboard() {
         
         <Categories 
           categories={categories} 
-          onCategoryPress={handleCategoryPress}
+          onCategoryPress={(category) => console.log('Category pressed:', category.title)} 
         />
         
         <Offers 

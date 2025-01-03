@@ -7,7 +7,6 @@ export type Category = {
   title: string;
   image: string;
   color: string;
-  slug: string;
 };
 
 type CategoriesProps = {
@@ -26,11 +25,7 @@ export function Categories({ categories, onCategoryPress }: CategoriesProps) {
             style={[styles.card, { backgroundColor: category.color }]}
             onPress={() => onCategoryPress(category)}
           >
-            <Image 
-              source={{ uri: category.image }} 
-              style={styles.image}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: category.image }} style={styles.image} />
             <Text style={styles.title}>{category.title}</Text>
           </TouchableOpacity>
         ))}
