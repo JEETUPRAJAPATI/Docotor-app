@@ -1,29 +1,32 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  TextInput,
-} from 'react-native';
+import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Country } from '@/services/countryService';
+import { CountrySearch } from './CountrySearch';
+import { CountryListItem } from './CountryListItem';
 
 type CountryListProps = {
   visible: boolean;
   onClose: () => void;
   countries: Country[];
   onSelect: (country: Country) => void;
+  loading?: boolean;
+  error?: string | null;
 };
 
-export function CountryList({ visible, onClose, countries, onSelect }: CountryListProps) {
+export function CountryList({ visible, onClose, countries, onSelect, loading, error }: CountryListProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  const filteredCountries = countries.filter(country =>
-    country.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCountries = React.useMemo(() => 
+    countries.filter(country =>
+      country.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [countries, searchQuery]
   );
+
+  const handleSelect = (country: Country) => {
+    onSelect(country);
+    onClose();
+  };
 
   return (
     <Modal visible={visible} animationType="slide">
@@ -35,30 +38,26 @@ export function CountryList({ visible, onClose, countries, onSelect }: CountryLi
           </TouchableOpacity>
         </View>
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search countries..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+        <CountrySearch value={searchQuery} onChangeText={setSearchQuery} />
 
-        <FlatList
-          data={filteredCountries}
-          keyExtractor={(item) => item.code}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.countryItem}
-              onPress={() => {
-                onSelect(item);
-                onClose();
-              }}
-            >
-              <Image source={{ uri: item.flag }} style={styles.flag} />
-              <Text style={styles.countryName}>{item.name}</Text>
-              <Text style={styles.dialCode}>{item.dialCode}</Text>
-            </TouchableOpacity>
-          )}
-        />
+        {loading ? (
+          <View style={styles.centerContent}>
+            <ActivityIndicator size="large" color="#6366f1" />
+          </View>
+        ) : error ? (
+          <View style={styles.centerContent}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredCountries}
+            keyExtractor={(item) => item.code}
+            renderItem={({ item }) => (
+              <CountryListItem country={item} onSelect={handleSelect} />
+            )}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
       </View>
     </Modal>
   );
@@ -85,30 +84,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#64748b',
   },
-  searchInput: {
-    margin: 20,
-    padding: 10,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 10,
-  },
-  countryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  flag: {
-    width: 30,
-    height: 20,
-    marginRight: 10,
-  },
-  countryName: {
+  centerContent: {
     flex: 1,
-    fontSize: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  dialCode: {
+  errorText: {
+    color: '#ef4444',
     fontSize: 16,
-    color: '#64748b',
+    textAlign: 'center',
   },
 });

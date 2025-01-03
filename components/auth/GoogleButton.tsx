@@ -2,11 +2,16 @@ import { TouchableOpacity, Text, Image, StyleSheet } from 'react-native';
 
 type GoogleButtonProps = {
   onPress: () => void;
+  disabled?: boolean;
 };
 
-export function GoogleButton({ onPress }: GoogleButtonProps) {
+export function GoogleButton({ onPress, disabled }: GoogleButtonProps) {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity 
+      style={[styles.container, disabled && styles.disabled]} 
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Image
         source={{ uri: 'https://developers.google.com/identity/images/g-logo.png' }}
         style={styles.icon}
@@ -25,6 +30,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     gap: 10,
+  },
+  disabled: {
+    opacity: 0.6,
   },
   icon: {
     width: 24,

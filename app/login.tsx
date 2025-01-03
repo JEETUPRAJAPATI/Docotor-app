@@ -17,25 +17,45 @@ import { CountrySelector } from '@/components/auth/CountrySelector';
 import { CountryList } from '@/components/auth/CountryList';
 import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useCountries } from '@/services/countryService';
+import { validatePhoneNumber } from '@/utils/phoneUtils';
 
 export default function Login() {
   const router = useRouter();
-  const { countries, loading } = useCountries();
+  const { countries, loading, error } = useCountries();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState(countries[0] || { name: 'India', dialCode: '+91' });
+  const [selectedCountry, setSelectedCountry] = useState(
+    countries[0] || { name: 'India', dialCode: '+91', code: 'IN', flag: '' }
+  );
   const [showCountryList, setShowCountryList] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const handleContinue = () => {
-    if (phoneNumber.length < 10) {
-      Alert.alert('Invalid Phone Number', 'Please enter a valid phone number');
+  const handleContinue = async () => {
+    if (!validatePhoneNumber(phoneNumber)) {
+      Alert.alert('Invalid Phone Number', 'Please enter a valid phone number with at least 10 digits');
       return;
     }
-    router.replace('/dashboard');
+
+    setIsLoggingIn(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.replace('/dashboard');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to log in. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // For demo, directly navigate to dashboard
-    router.replace('/dashboard');
+  const handleGoogleSignIn = async () => {
+    setIsLoggingIn(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.replace('/dashboard');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to log in with Google. Please try again.');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   return (
@@ -43,7 +63,10 @@ export default function Login() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.content}>
             <Image
               source={require('../assets/images/icon.png')}
@@ -71,11 +94,12 @@ export default function Login() {
                 countryCode={selectedCountry.dialCode}
               />
               <Button
-                title="Continue"
+                title={isLoggingIn ? "Logging in..." : "Continue"}
                 onPress={handleContinue}
+                disabled={isLoggingIn}
               />
               <Text style={styles.orText}>Or quick continue with</Text>
-              <GoogleButton onPress={handleGoogleSignIn} />
+              <GoogleButton onPress={handleGoogleSignIn} disabled={isLoggingIn} />
             </View>
           </View>
         </ScrollView>
@@ -86,6 +110,8 @@ export default function Login() {
         onClose={() => setShowCountryList(false)}
         countries={countries}
         onSelect={setSelectedCountry}
+        loading={loading}
+        error={error}
       />
     </SafeAreaView>
   );
